@@ -3,3 +3,6 @@ I am working on setting up Lua following https://www.youtube.com/watch?v=rol8n3F
 I am doing this so I can transcribe the code in https://www.youtube.com/watch?v=I4nf23HywmI&ab_channel=TheMindGrid
   The code from this video is uploaded under botnet01-dissector.lua 
   feel free to experiment with it. 
+
+10-14-2024 Matthew Ralon
+Added packetgrabbing.lua. Simple packet grabber using wiresharks built in functions to write live packets as they come in to a .txt file. Please read the description on the file to learn more.
