@@ -1,5 +1,29 @@
 import customtkinter as ctk
 import tkinter as tk
+import ollama
+
+
+stream = None
+conversation_id = None
+
+def send_message(user_message):
+    global stream
+    global conversation_id
+
+    if stream is None:
+        stream = ollama.chat(
+            model='llama3.2',
+            messages=[{'role':'user', 'content':user_message}],
+            stream=True
+        )
+        conversation_id = stream.conversation_id
+    else:
+        stream.send({'role':'user', 'content':user_message})
+    
+    response = ""
+    for chunk in stream:
+        response += chunk['message']['content']
+    return response
 
 # Function to handle sending a message
 def on_send():
@@ -7,9 +31,10 @@ def on_send():
     user_message = entry.get()
     if user_message.strip():  # Only proceed if there's input
         chatbox.insert(tk.END, f"You: {user_message}\n")
-        chatbox.insert(tk.END, "LLM Response Here\n")
+        chatbox.insert(tk.END, send_message(user_message) + "\n")
         chatbox.yview(tk.END)  # Scroll to the bottom
         entry.delete(0, tk.END)  # Clear the entry field
+
 
 # Initialize CustomTkinter appearance and settings
 ctk.set_appearance_mode("Dark")  # Modes: "System" (default), "Dark", "Light"
@@ -41,6 +66,7 @@ entry.pack(side=tk.LEFT, padx=10, pady=10, fill=tk.X, expand=True)
 
 send_button = ctk.CTkButton(input_frame, text="Send", command=on_send)
 send_button.pack(side=tk.RIGHT, padx=10)
+
 
 # Start the main loop
 root.mainloop()
