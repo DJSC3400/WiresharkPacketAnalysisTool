@@ -6,7 +6,7 @@ local tcp_dstport = Field.new("tcp.dstport")
 local protocol = Field.new("frame.protocols")
 
 -- file path to save packet data
-local packet_file_path = "C:\\enter\\your\\path\\captured_packets.txt"
+local packet_file_path = "C:\\Users\\School\\Documents\\PacketText\\captured_packets.txt"
 
 -- table to store full packet data
 local packet_data = {}
