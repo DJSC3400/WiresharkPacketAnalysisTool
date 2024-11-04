@@ -50,7 +50,7 @@ def applyDisplayFilter(filePath, displayFilter):
 
 # Example usage:
 add_to_path(r"C:\Program Files\Wireshark")
-output = applyDisplayFilter("C:/Users/School/Documents/test.pcapng", "http")
+output = applyDisplayFilter("C:/Users/cudoh/Desktop/testing.pcapng", "tcp")
 print(output)
 
 #live_capture()
