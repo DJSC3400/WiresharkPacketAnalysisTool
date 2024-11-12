@@ -1,42 +1,32 @@
-import subprocess
 import pyshark
-import os
+import json
 
-def live_capture(interface='Wi-Fi', number_of_packets=10, packet_filter=None):
-    """
-    Capture live packets on a specified network interface with an optional filter.
-    
-    Parameters:
-    - interface (str): The name of the network interface to capture on.
-    - number_of_packets (int): The number of packets to capture.
-    - packet_filter (str): A display filter to apply (e.g., "tcp", "udp", "icmp").
-    """
-    # Initialize live capture on the specified interface with an optional filter
-    capture = pyshark.LiveCapture(interface=interface, display_filter=packet_filter)
+def capture_packets_to_file(interface_name, output_file="captured_packets.json", packet_count=5):
+    # Set up the capture on the specified interface
+    capture = pyshark.LiveCapture(interface=interface_name)
     
     # Start capturing packets
-    print(f"Starting live capture on interface: {interface} for {number_of_packets} packets.")
-    if packet_filter:
-        print(f"Applying filter: {packet_filter}")
+    packets = []
+    for packet in capture.sniff_continuously(packet_count=packet_count):
+        packet_info = {"layers": {}}
         
-    packet_count = 1  # Start packet numbering at 1
+        # Capture all layers' details
+        for layer in packet.layers:
+            layer_info = {}
+            for field in layer.field_names:
+                layer_info[field] = layer.get_field(field)
+            
+            # Add layer info to packet_info
+            packet_info["layers"][layer.layer_name] = layer_info
+        
+        packets.append(packet_info)
+
+    # Write captured packets to a JSON file
+    with open(output_file, "w") as file:
+        json.dump(packets, file, indent=4)
     
-    for packet in capture.sniff_continuously():
-        # Attempt to print a basic summary using available layers
-        try:
-            protocol = packet.highest_layer  # Protocol layer (e.g., TCP, UDP)
-            src_ip = packet.ip.src if 'IP' in packet else 'N/A'
-            dst_ip = packet.ip.dst if 'IP' in packet else 'N/A'
-            print(f"Packet #{packet_count}: {protocol} | Source: {src_ip} -> Destination: {dst_ip}")
-        
-        except AttributeError as e:
-            print(f"Packet #{packet_count}: Unable to retrieve packet summary - {e}")
-        
-        packet_count += 1
-        if packet_count > number_of_packets:
-            print("Capture complete.")
-            break
+    print(f"Captured packet details saved to {output_file}")
 
-
-# Start live capture with a specified number of packets and a filter
-live_capture(number_of_packets=20, packet_filter="http")  # Adjust number_of_packets and filter as needed
+# Example usage (interface name should match the user's selection in Wireshark)
+interface_name = "Wi-Fi"  # Replace with your interface
+capture_packets_to_file(interface_name)

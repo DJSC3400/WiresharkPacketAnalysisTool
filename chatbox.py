@@ -1,20 +1,44 @@
-#TEST COMMENT
 import tkinter as tk
 import customtkinter as ctk
 import subprocess
+import json
 
-# Function to get response from the Ollama model
-import subprocess
-
-import subprocess
-
-#Get ollama in chatbox, AI wrote the error handling.
-def get_ollama_response(prompt):
+# Load JSON data from captured_packets.json
+def load_packet_data(file_path, filter_criteria):
     try:
+        with open(file_path, 'r') as file:
+            packet_data = json.load(file)
+
+        # Filter packets based on user criteria
+        filtered_packets = [
+            packet for packet in packet_data.get("packets", [])
+            if all(packet.get(key) == value for key, value in filter_criteria.items())
+        ]
+
+        # Check if there are no matches
+        if not filtered_packets:
+            return "No packets found matching the specified criteria."
+
+        return json.dumps({"packets": filtered_packets}, indent=4)
+
+    except FileNotFoundError:
+        print(f"Error: The file '{file_path}' was not found.")
+    except json.JSONDecodeError:
+        print("Error: The file is not a valid JSON format.")
+
+# Function to get response from the Ollama model with JSON data context
+def get_ollama_response(prompt, file_path, filter_criteria):
+    try:
+        # Load packet data with filter criteria
+        packet_context = load_packet_data(file_path, filter_criteria)
+
+        # Combine the prompt with packet context for the model
+        full_prompt = f"{prompt}\n\nPacket Context:\n{packet_context}"
+
         # Run Ollama with the prompt, suppressing stderr to avoid unwanted messages
         result = subprocess.run(
             ['ollama', 'run', 'llama3.2'],
-            input=prompt,
+            input=full_prompt,
             stdout=subprocess.PIPE,  # Capture standard output
             stderr=subprocess.DEVNULL,  # Suppress standard error
             text=True
@@ -39,7 +63,6 @@ def on_send(event=None):
 
     # Get response from the Ollama model
     response = get_ollama_response(user_input)
-    #print(response)  # Debugging: Print response to console, USE THIS IF MODEL NEVER RESPONDS OR SOME SORT OF ERROR
 
     # Display the response in the chatbox
     chatbox.insert(tk.END, f"LLM: {response}\n")
@@ -83,4 +106,3 @@ send_button.pack(side=tk.RIGHT, padx=10)
 
 # Start the main event loop
 root.mainloop()
-
