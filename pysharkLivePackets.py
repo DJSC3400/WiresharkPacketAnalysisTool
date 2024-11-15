@@ -91,4 +91,4 @@ def bigPacketCatcher(fileQuantity, packetCount, savePath):
         savePacketInfo(unique_save_path,output)
         fileCounter += 1
 
-bigPacketCatcher(4, 20, "C:/Users/School/Documents/PacketText/bigOutput.txt")
+bigPacketCatcher(4, 20, "./bigOutput.txt")
